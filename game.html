@@ -404,7 +404,7 @@
 	
 	    <script>
         let inactivityTimer;
-        const INACTIVITY_TIMEOUT = 120000; // 2 minutos
+        const INACTIVITY_TIMEOUT = 180000; // 3 minutos
 
         function resetInactivityTimer() {
             // Limpa o temporizador de inatividade existente
@@ -413,7 +413,7 @@
             }
             // Define um novo temporizador de inatividade
             inactivityTimer = setTimeout(() => {
-                // Atualiza a página após 2 minuto de inatividade
+                // Atualiza a página após 3 minutos de inatividade
                 location.reload();
             }, INACTIVITY_TIMEOUT);
         }
