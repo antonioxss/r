@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Reflexos</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            cursor: crosshair; /* Estilo de cursor cruz */
+        }
+        .circle {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+        }
+        #redCircle {
+            background-color: red;
+        }
+        #greenCircle {
+            background-color: green;
+        }
+        #time, #best-time {
+            position: fixed;
+            font-size: 24px;
+            color: white;
+        }
+        #time {
+            top: 10px;
+            left: 10px;
+        }
+        #best-time {
+            top: 10px;
+            right: 10px;
+        }
+        #instruction {
+            position: fixed;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+            color: grey;
+        }
+    </style>
+</head>
+<body>
+    <div id="time">Tempo: 0 ms</div>
+    <div id="best-time">Melhor Tempo: 0 ms</div>
+    <div id="redCircle" class="circle"></div>
+    <div id="greenCircle" class="circle"></div>
+    <div id="instruction">Pressione F11 para uma melhor experiência. ~ Tonny ~</div>
+
+    <script>
+        const redCircle = document.getElementById('redCircle');
+        const greenCircle = document.getElementById('greenCircle');
+        const timeDisplay = document.getElementById('time');
+        const bestTimeDisplay = document.getElementById('best-time');
+        let startTime, endTime;
+        let bestTime = Infinity;
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function showCircles() {
+            const xRed = getRandomInt(0, window.innerWidth - 150);
+            const yRed = getRandomInt(0, window.innerHeight - 150);
+            redCircle.style.left = xRed + 'px';
+            redCircle.style.top = yRed + 'px';
+            redCircle.style.display = 'block';
+
+            let xGreen, yGreen;
+            do {
+                xGreen = getRandomInt(0, window.innerWidth - 150);
+                yGreen = getRandomInt(0, window.innerHeight - 150);
+            } while (Math.abs(xGreen - xRed) < 150 && Math.abs(yGreen - yRed) < 150); // ensure green circle doesn't overlap with red circle
+
+            greenCircle.style.left = xGreen + 'px';
+            greenCircle.style.top = yGreen + 'px';
+            greenCircle.style.display = 'block';
+
+            startTime = new Date().getTime();
+        }
+
+        function hideCircles() {
+            redCircle.style.display = 'none';
+            greenCircle.style.display = 'none';
+        }
+
+        function measureTime() {
+            endTime = new Date().getTime();
+            const reactionTime = endTime - startTime;
+            timeDisplay.textContent = `Tempo: ${reactionTime} ms`;
+            
+            if (reactionTime < bestTime) {
+                bestTime = reactionTime;
+                bestTimeDisplay.textContent = `Melhor Tempo: ${bestTime} ms`;
+            }
+
+            hideCircles();
+            setTimeout(showCircles, getRandomInt(1000, 3000)); // show circles again after 1-3 seconds
+        }
+
+        redCircle.addEventListener('click', measureTime);
+
+        // Initially hide the green circle's click event to avoid accidental clicks
+        greenCircle.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        setTimeout(showCircles, getRandomInt(1000, 3000)); // start the game after 1-3 seconds
+    </script>
+</body>
+</html>
