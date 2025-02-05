@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aparelho Antonio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            background-color: #0E0E0E;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            font-size: 12px;
+        }
+        .container {
+            text-align: left;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            margin: 10px 0;
+            width: 100%;
+            max-width: 500px;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #2c2c2c;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 2px solid #424242;
+            position: relative;
+        }
+        .progress-bar-inner {
+            height: 30px;
+            background-color: #4caf50;
+            width: 0;
+            transition: width 1s;
+        }
+        .progress-bar-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            left: 0;
+            top: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #fff;
+            pointer-events: none;
+        }
+        .label {
+            color: white; /* Cor dos rótulos */
+        }
+        .value {
+            color: gray; /* Cor dos valores */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <center><h1>Alinhador Superior</h1></center>
+        <div class="progress-bar">
+            <div class="progress-bar-inner" id="progress-bar-inner-upper"></div>
+            <div class="progress-bar-text" id="progress-bar-text-upper">0%</div>
+        </div>
+        <p><span class="label">Data de início:</span> <span class="value" id="start-date-upper"></span></p>
+        <p><span class="label">Dias passados:</span> <span class="value" id="days-passed-upper">0</span></p>
+        <p><span class="label">Semanas passadas:</span> <span class="value" id="weeks-passed-upper">0</span></p>
+        <p><span class="label">Meses passados:</span> <span class="value" id="months-passed-upper">0 meses e 0 dias</span></p>
+        <p><span class="label">Data 50%:</span> <span class="value" id="halfway-date-upper"></span></p>
+        <p><span class="label">Data 100%:</span> <span class="value" id="completion-date-upper"></span></p>
+        <p><span class="label">Dias restantes:</span> <span class="value" id="days-left-upper">0</span></p>
+    </div>
+
+    <div class="container">
+        <center><h1>Alinhador Inferior</h1></center>
+        <div class="progress-bar">
+            <div class="progress-bar-inner" id="progress-bar-inner-lower"></div>
+            <div class="progress-bar-text" id="progress-bar-text-lower">0%</div>
+        </div>
+		
+		<p><span class="label">Data de início:</span> <span class="value">quarta-feira, dia 22 de maio de 2024</span></p>
+        <p><span class="label">Data 100%:</span> <span class="value">segunda-feira, dia 28 de outubro de 2024</span></p>
+		<p><span class="label">Dias de uso:</span> <span class="value">153</span></p>
+        <p><span class="label">Dias restantes:</span> <span class="value">0</span></p>
+    </div>
+
+    <p id="current-date">Hoje é </p>
+
+    <script>
+        async function getCurrentDateTime() {
+            try {
+                const response = await fetch('http://worldtimeapi.org/api/timezone/America/Sao_Paulo');
+                const data = await response.json();
+                return new Date(data.datetime);
+            } catch (error) {
+                console.error('Erro ao buscar data e hora atual:', error);
+                return new Date();
+            }
+        }
+
+        function formatWeeksAndDays(days) {
+            const weeks = Math.floor(days / 7);
+            const remainingDays = days % 7;
+            return `${weeks} semana${weeks !== 1 ? 's' : ''} e ${remainingDays} dia${remainingDays !== 1 ? 's' : ''}`;
+        }
+
+        function formatMonthsAndDays(days) {
+            const months = Math.floor(days / 30);
+            const remainingDays = days % 30;
+            return `${months} mes${months !== 1 ? 'es' : ''} e ${remainingDays} dia${remainingDays !== 1 ? 's' : ''}`;
+        }
+
+        function formatDate(date) {
+            const daysOfWeek = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+            const dayOfWeek = daysOfWeek[date.getDay()];
+            const day = date.getDate();
+            const months = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+            const month = months[date.getMonth()];
+            const year = date.getFullYear();
+            return `${dayOfWeek}, dia ${day} de ${month} de ${year}`;
+        }
+
+        async function updateProgressBars(startDateStr, totalDaysUpper) {
+            const startDate = new Date(startDateStr);
+            const currentDate = await getCurrentDateTime();
+
+            document.getElementById('current-date').textContent = `Hoje é ${formatDate(currentDate)}.`;
+
+            const diffTime = Math.abs(currentDate - startDate);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            // Alinhador Superior
+            document.getElementById('start-date-upper').textContent = formatDate(startDate);
+            document.getElementById('days-passed-upper').textContent = diffDays;
+            document.getElementById('weeks-passed-upper').textContent = formatWeeksAndDays(diffDays);
+            document.getElementById('months-passed-upper').textContent = formatMonthsAndDays(diffDays);
+
+            const halfwayDateUpper = new Date(startDate);
+            halfwayDateUpper.setDate(startDate.getDate() + totalDaysUpper / 2);
+            document.getElementById('halfway-date-upper').textContent = formatDate(halfwayDateUpper);
+
+            const completionDateUpper = new Date(startDate);
+            completionDateUpper.setDate(startDate.getDate() + totalDaysUpper);
+            document.getElementById('completion-date-upper').textContent = formatDate(completionDateUpper);
+
+            const daysLeftUpper = Math.max(totalDaysUpper - diffDays, 0);
+            document.getElementById('days-left-upper').textContent = `${daysLeftUpper} (${formatMonthsAndDays(daysLeftUpper)})`;
+
+            // Atualizar barra de progresso
+            const progressUpper = Math.min((diffDays / totalDaysUpper) * 100, 100);
+            document.getElementById('progress-bar-inner-upper').style.width = `${progressUpper}%`;
+            document.getElementById('progress-bar-text-upper').textContent = `${progressUpper.toFixed(2)}%`;
+            
+            // Barra de progresso inferior
+            const totalDaysLower = 169; // Substitua conforme necessário
+            const diffDaysLower = Math.max(totalDaysLower - diffDays, 0);
+            const progressLower = Math.min((diffDays / totalDaysLower) * 100, 100);
+            document.getElementById('progress-bar-inner-lower').style.width = `${progressLower}%`;
+            document.getElementById('progress-bar-text-lower').textContent = `${progressLower.toFixed(2)}%`;
+        }
+
+        const startDateStr = '2024-05-22T00:00:00';
+        const totalDaysUpper = 369;
+
+        updateProgressBars(startDateStr, totalDaysUpper);
+    </script>
+</body>
+</html>

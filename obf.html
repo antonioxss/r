@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tonny Obf</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        textarea { width: 100%; height: 150px; }
+        button { margin-top: 10px; padding: 10px; }
+        pre { background: #f4f4f4; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <textarea id="inputCode" placeholder="JS aqui"></textarea>
+    <button onclick="obfuscateCode()">Obfuscar Código</button>
+    <h3>Código Ofuscado:</h3>
+    <pre id="outputCode"></pre>
+    <script>
+        function obfuscateCode() {
+            let input = document.getElementById("inputCode").value;
+            if (!input.trim()) {
+                alert("Digite um código JavaScript para ofuscar.");
+                return;
+            }
+            
+            let obfuscatedCode = customObfuscator(input);
+            document.getElementById("outputCode").textContent = obfuscatedCode;
+        }
+        
+        function customObfuscator(code) {
+            let encoded = btoa(unescape(encodeURIComponent(code)));
+            let shuffled = encoded.split('').reverse().join('');
+            let wrapped = `eval(decodeURIComponent(escape(atob('${shuffled.split('').reverse().join('')}'))))`;
+            return wrapped;
+        }
+    </script>
+</body>
+</html>
