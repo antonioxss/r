@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript SEC OBF</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        textarea { width: 100%; height: 150px; }
+        button { margin-top: 10px; padding: 10px; }
+        pre { background: #f4f4f4; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <textarea id="inputCode" placeholder="JS Aqui"></textarea>
+    <button onclick="obfuscateCode()">Obfuscar Código</button>
+    <h3>Código Ofuscado:</h3>
+    <pre id="outputCode"></pre>
+    <script>
+        function obfuscateCode() {
+            let input = document.getElementById("inputCode").value;
+            if (!input.trim()) {
+                alert("Digite um código JavaScript para ofuscar.");
+                return;
+            }
+            
+            let obfuscatedCode = secureObfuscator(input);
+            document.getElementById("outputCode").textContent = obfuscatedCode;
+        }
+        
+        function secureObfuscator(code) {
+            let encoded = btoa(unescape(encodeURIComponent(code)));
+            let shuffled = encoded.split('').reverse().join('');
+            let key = Math.floor(Math.random() * 1000) + 1;
+            let encrypted = shuffled.split('').map(c => String.fromCharCode(c.charCodeAt(0) ^ key)).join('');
+            let wrapped = `(() => { let d='${btoa(encrypted)}',k=${key},c=atob(d).split('').map(x=>String.fromCharCode(x.charCodeAt(0)^k)).join(''); eval(c); })();`;
+            return wrapped;
+        }
+    </script>
+</body>
+</html>
