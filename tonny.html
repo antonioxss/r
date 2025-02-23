@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tonny Games</title>
+    <title>TonnyGames [BETA]</title>
     <style>
         body { 
             font-family: 'Arial', sans-serif; 
@@ -11,15 +11,16 @@
             background-color: #121212; 
             color: #eeeeee;
             margin: 0;
-            padding: 0;
-            height: 100vh;
+            padding: 20px;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            user-select: none; 
+            user-select: none;
+            box-sizing: border-box;
         }
         h1 {
-            font-size: 3em;
+            font-size: clamp(2em, 8vw, 3em);
             margin-bottom: 20px;
             color: #ffbf00;
             text-shadow: 0 0 10px #ffbf00;
@@ -30,13 +31,13 @@
             margin: 5px; 
         }
         .cell { 
-            width: 60px; 
-            height: 60px; 
+            width: clamp(40px, 12vw, 60px);
+            height: clamp(40px, 12vw, 60px);
             border: 2px solid #444; 
-            margin: 5px; 
-            font-size: 28px; 
+            margin: 3px;
+            font-size: clamp(18px, 6vw, 28px);
             text-align: center; 
-            line-height: 60px; 
+            line-height: clamp(40px, 12vw, 60px);
             text-transform: uppercase;
             background-color: #222; 
             color: white;
@@ -64,30 +65,41 @@
         }
         #message {
             margin-top: 20px;
-            font-size: 1.5em;
+            font-size: clamp(1em, 4vw, 1.5em);
             color: #ffbf00;
         }
         #timer {
             margin-top: 10px;
-            font-size: 1;
+            font-size: clamp(0.8em, 3.5vw, 1.2em);
             color: #ffffff;
         }
-		  a {
-    color: white;
-	font-size: 10px;
-    text-decoration: none;
-  }
+        #hiddenInput {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+		        }
+
     </style>
+<style>
+  a {
+    color: white;
+    text-decoration: none;
+    font-size: 10px;
+  }
+</style>
 </head>
 <body>
-    <h1>Tonny Games [BETA]</h1>
+    <h1>TonnyGames [BETA]</h1>
     <div id="board"></div>
     <p id="message"></p>
     <p id="timer"></p>
+    <input type="text" id="hiddenInput" autocorrect="off" autocapitalize="off" spellcheck="false">
     
     <script>
         const words = [
-            "chave", "vexar", "fazei", "juris", "trope", "fugir", "bossa", "zumbi", "mante", "pênis",
+            "chave", "vexar", "fazei", "juris", "pênis", "trope", "fugir", "bossa", "zumbi", "mante", 
             "fardo", "sismo", "jogado", "nuvem", "varal", "cobre", "estio", "falar", "misto", "rolar", 
             "troco", "fecar", "burro", "votar", "copia", "peso", "atoar", "tique", "lidar", "ficar", 
             "sagaz", "âmago", "negro", "termo", "êxito", "mexer", "nobre", "senso", "afeto", "ética", 
@@ -164,51 +176,51 @@
             "ornar", "sarau", "nuvem", "cover", "átimo", "órgão", "lesse", "areia", "cargo", "pinho", 
             "virar", "tchau", "macro", "finjo", "vazão", "jogar", "arado", "stand", "axila", "nesse", 
             "jejum", "berro", "magna", "seixo", "fosso", "perto", "catre", "farta", "beijo", "tiver", 
-            "rocha", "gíria", "troca", "varoa", "mídia", "légua", "tição", "deste", "traje", "porra",
-            "bruta", "bruto", "tutor", "todas", "assar", "trato", "renda", "gabar", "perco", "viram", 
-            "guria", "pomar", "close", "calor", "amado", "porte", "estro", "surto", "vadio", "nessa", 
-            "feita", "tenha", "rural", "arfar", "nesta", "âmbar", "santo", "canso", "silvo", "verão", 
-            "dança", "bazar", "fossa", "depor", "odiar", "vedar", "recém", "vista", "grota", "laudo", 
-            "mamãe", "pavor", "etapa", "irado", "xucro", "negar", "aviar", "logos", "cifra", "canto", 
-            "cheia", "marca", "densa", "cerca", "cenho", "bolsa", "ferpa", "chula", "minar", "visto", 
-            "clero", "bucho", "régio", "cinto", "salmo", "vagar", "ágape", "coroa", "segar", "molde", 
-            "horto", "burra", "invés", "lesão", "ruído", "urdir", "largo", "letra", "paiol", "sótão", 
-            "morfo", "folha", "símio", "penso", "quais", "velha", "final", "deram", "esgar", "pugna", 
-            "jazer", "pasma", "úbere", "trago", "lesto", "vasta", "fundo", "ceita", "troco", "ardis", 
-            "podar", "ufano", "queda", "troço", "álamo", "linha", "piche", "mocho", "apear", "úmido", 
-            "frota", "pólis", "bulir", "preço", "ileso", "neste", "olhos", "áudio", "peita", "resto", 
-            "folia", "outra", "manto", "viger", "matar", "disso", "redor", "cível", "monta", "cosmo", 
-            "bolso", "mover", "seiva", "barro", "chaga", "misto", "chave", "lábia", "falsa", "retro", 
-            "limpo", "banto", "justa", "nácar", "campa", "farol", "veloz", "barão", "lutar", "álbum", 
-            "macho", "vazia", "louca", "louro", "bedel", "mimar", "gemer", "punha", "porca", "sabor", 
-            "zumbi", "toque", "axial", "calvo", "arroz", "lucro", "nariz", "venho", "enjoo", "longo", 
-            "findo", "dados", "calça", "coevo", "salva", "rente", "samba", "subir", "urgir", "baixa", 
-            "farto", "lousa", "firma", "solta", "diabo", "fazes", "pagar", "torna", "bruxa", "ousar", 
-            "pluma", "forro", "valer", "sexto", "xampu", "demão", "sabiá", "fugiu", "sigla", "repor", 
-            "reler", "fátuo", "gueto", "canil", "choça", "bugre", "lento", "hífen", "vário", "cardo", 
-            "míope", "corar", "custo", "corte", "pular", "rácio", "mania", "versa", "nesga", "focar", 
-            "sadio", "ferir", "tumba", "modal", "sócio", "penca", "sacar", "harém", "feira", "sugar", 
-            "digna", "ceifa"
+            "rocha", "gíria", "troca", "varoa", "mídia", "légua", "tição", "deste", "traje", "bruta", 
+            "bruto", "tutor", "todas", "assar", "trato", "renda", "gabar", "perco", "viram", "guria", 
+            "pomar", "close", "calor", "amado", "porte", "estro", "surto", "vadio", "nessa", "feita", 
+            "tenha", "rural", "arfar", "nesta", "âmbar", "santo", "canso", "silvo", "verão", "dança", 
+            "bazar", "fossa", "depor", "odiar", "vedar", "recém", "vista", "grota", "laudo", "mamãe", 
+            "pavor", "etapa", "irado", "xucro", "negar", "aviar", "logos", "cifra", "canto", "cheia", 
+            "marca", "densa", "cerca", "cenho", "bolsa", "ferpa", "chula", "minar", "visto", "clero", 
+            "bucho", "régio", "cinto", "salmo", "vagar", "ágape", "coroa", "segar", "molde", "horto", 
+            "burra", "invés", "lesão", "ruído", "urdir", "largo", "letra", "paiol", "sótão", "morfo", 
+            "folha", "símio", "penso", "quais", "velha", "final", "deram", "esgar", "pugna", "jazer", 
+            "pasma", "úbere", "trago", "lesto", "vasta", "fundo", "ceita", "troco", "ardis", "podar", 
+            "ufano", "queda", "troço", "álamo", "linha", "piche", "mocho", "apear", "úmido", "frota", 
+            "pólis", "bulir", "preço", "ileso", "neste", "olhos", "áudio", "peita", "resto", "folia", 
+            "outra", "manto", "viger", "matar", "disso", "redor", "cível", "monta", "cosmo", "bolso", 
+            "mover", "seiva", "barro", "chaga", "misto", "chave", "lábia", "falsa", "retro", "limpo", 
+            "banto", "justa", "nácar", "campa", "farol", "veloz", "barão", "lutar", "álbum", "macho", 
+            "vazia", "louca", "louro", "bedel", "mimar", "gemer", "punha", "porca", "sabor", "zumbi", 
+            "toque", "axial", "calvo", "arroz", "lucro", "nariz", "venho", "enjoo", "longo", "findo", 
+            "dados", "calça", "coevo", "salva", "rente", "samba", "subir", "urgir", "baixa", "farto", 
+            "lousa", "firma", "solta", "diabo", "fazes", "pagar", "torna", "bruxa", "ousar", "pluma", 
+            "forro", "valer", "sexto", "xampu", "demão", "sabiá", "fugiu", "sigla", "repor", "reler", 
+            "fátuo", "gueto", "canil", "choça", "bugre", "lento", "vário", "cardo", "míope", "corar", 
+            "custo", "corte", "pular", "rácio", "mania", "versa", "nesga", "focar", "sadio", "ferir", 
+            "tumba", "modal", "sócio", "penca", "sacar", "harém", "feira", "sugar", "digna", "ceifa"
         ];
         
         const now = new Date();
         const currentHour = now.getHours();
         const currentMinutes = now.getMinutes();
-        const intervalIndex = Math.floor(currentMinutes / 10); 
-        const gameKey = `wordGame_${currentHour}_${intervalIndex}`; 
-        const secretWord = words[intervalIndex % words.length]; 
+        const intervalIndex = Math.floor(currentMinutes / 10);
+        const gameKey = `wordGame_${currentHour}_${intervalIndex}`;
+        const secretWord = words[intervalIndex % words.length];
 
         let attempts = 0;
         let currentGuess = "";
         let gameOver = false;
+        let guesses = JSON.parse(localStorage.getItem(`${gameKey}_guesses`)) || [];
 
         // Função para remover acentos e substituir ç por c
         function normalizeWord(word) {
             return word
                 .toLowerCase()
                 .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/ç/g, "c");
+                .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+                .replace(/ç/g, "c"); // Substitui ç por c
         }
 
         const normalizedSecretWord = normalizeWord(secretWord);
@@ -232,13 +244,7 @@
 
         function disableBoard() {
             const board = document.getElementById("board");
-            board.style.pointerEvents = "none"; 
-            board.classList.add("hidden"); 
-            const cells = document.getElementsByClassName("cell");
-            for (let cell of cells) {
-                cell.style.backgroundColor = "#333"; 
-                cell.style.cursor = "not-allowed"; 
-            }
+            board.style.pointerEvents = "none";
         }
         
         function createBoard() {
@@ -253,9 +259,66 @@
                 }
                 board.appendChild(row);
             }
+            restoreGuesses();
+            focusInput();
         }
         
-        document.addEventListener("keydown", function(event) {
+        function restoreGuesses() {
+            attempts = guesses.length;
+            for (let i = 0; i < guesses.length; i++) {
+                let row = document.getElementsByClassName("row")[i];
+                let guessLetters = guesses[i].word.split("");
+                let letters = secretWord.split("");
+                let normalizedGuessLetters = normalizeWord(guesses[i].word).split("");
+                let normalizedLetters = normalizedSecretWord.split("");
+                let letterCount = {};
+
+                for (let letter of letters) {
+                    letterCount[letter] = (letterCount[letter] || 0) + 1;
+                }
+
+                let tempLetterCount = { ...letterCount }; // Cria uma cópia para avaliação de "present"
+                for (let j = 0; j < 5; j++) {
+                    let cell = row.children[j];
+                    cell.innerText = guessLetters[j].toUpperCase();
+                    if (guessLetters[j] === letters[j]) {
+                        cell.classList.add("correct");
+                        tempLetterCount[guessLetters[j]]--;
+                        guessLetters[j] = null;
+                    }
+                }
+
+                for (let j = 0; j < 5; j++) {
+                    if (guessLetters[j] && tempLetterCount[guessLetters[j]] > 0) {
+                        let cell = row.children[j];
+                        cell.classList.add("present");
+                        tempLetterCount[guessLetters[j]]--;
+                    } else if (guessLetters[j]) {
+                        let cell = row.children[j];
+                        cell.classList.add("absent");
+                    }
+                }
+            }
+            updateBoard();
+        }
+
+        function focusInput() {
+            const input = document.getElementById("hiddenInput");
+            input.focus();
+        }
+
+        document.addEventListener("keydown", handleKeyInput);
+        
+        document.getElementById("hiddenInput").addEventListener("input", function(event) {
+            const key = event.data;
+            if (key && key.match(/^[a-zA-Z]$/) && currentGuess.length < 5) {
+                currentGuess += key.toLowerCase();
+                updateBoard();
+            }
+            event.target.value = "";
+        });
+
+        function handleKeyInput(event) {
             if (gameOver) return; 
             
             if (event.key.match(/^[a-zA-Z]$/) && currentGuess.length < 5) {
@@ -266,7 +329,7 @@
                 checkGuess();
             }
             updateBoard();
-        });
+        }
         
         function updateBoard() {
             if (gameOver) return; 
@@ -282,33 +345,39 @@
             let letters = secretWord.split(""); 
             let guessLetters = currentGuess.split("");
             let normalizedGuess = normalizeWord(currentGuess); 
+            let normalizedGuessLetters = normalizedGuess.split("");
             let letterCount = {};
             
             for (let letter of letters) {
                 letterCount[letter] = (letterCount[letter] || 0) + 1;
             }
             
+            let tempLetterCount = { ...letterCount }; // Cópia para "present"
             for (let i = 0; i < 5; i++) {
                 let cell = row.children[i];
-                cell.innerText = currentGuess[i].toUpperCase();
+                cell.innerText = guessLetters[i].toUpperCase();
                 if (guessLetters[i] === letters[i]) {
                     cell.classList.add("correct");
-                    letterCount[guessLetters[i]]--;
+                    tempLetterCount[guessLetters[i]]--;
                     guessLetters[i] = null;
                 }
             }
             
             for (let i = 0; i < 5; i++) {
-                if (guessLetters[i] && letterCount[guessLetters[i]] > 0) {
+                if (guessLetters[i] && tempLetterCount[guessLetters[i]] > 0) {
                     let cell = row.children[i];
                     cell.classList.add("present");
-                    letterCount[guessLetters[i]]--;
+                    tempLetterCount[guessLetters[i]]--;
                 } else if (guessLetters[i]) {
                     let cell = row.children[i];
                     cell.classList.add("absent");
                 }
             }
             
+            guesses.push({ word: currentGuess });
+            localStorage.setItem(`${gameKey}_guesses`, JSON.stringify(guesses));
+
+            // Aceita a palavra sem acentos ou ç
             if (normalizedGuess === normalizedSecretWord) {
                 revealWordWithDelay(row);
                 localStorage.setItem(gameKey, "won"); 
@@ -357,5 +426,6 @@
         setInterval(updateTimer, 1000);
     </script>
 </body>
-<a href="https://www.instagram.com/antonio_ssh/" target="_blank">~ Antonio Pedro ~</a>
+	<a href="https://www.instagram.com/antonio_ssh/" target="_blank">~ Antonio Pedro ~</a>
+
 </html>
