@@ -12,7 +12,7 @@
             color: #eeeeee;
             margin: 0;
             padding: 20px;
-            min-height: 50vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -127,7 +127,7 @@
 
     <script>
         const words = [
-            "chave", "vexar", "fazei", "juris", "pênis", "trope", "fugir", "bossa", "zumbi", "mante", 
+            "chave", "vexar", "fazei", "juris", "pênis", "tropa", "fugir", "bossa", "zumbi", "mante", 
             "fardo", "sismo", "jogado", "nuvem", "varal", "cobre", "estio", "falar", "misto", "rolar", 
             "troco", "fecar", "burro", "votar", "copia", "peso", "atoar", "tique", "lidar", "ficar", 
             "sagaz", "âmago", "negro", "termo", "êxito", "mexer", "nobre", "senso", "afeto", "ética", 
@@ -227,15 +227,24 @@
             "forro", "valer", "sexto", "xampu", "demão", "sabiá", "fugiu", "sigla", "repor", "reler", 
             "fátuo", "gueto", "canil", "choça", "bugre", "lento", "vário", "cardo", "míope", "corar", 
             "custo", "corte", "pular", "rácio", "mania", "versa", "nesga", "focar", "sadio", "ferir", 
-            "tumba", "modal", "sócio", "penca", "sacar", "harém", "feira", "sugar", "digna", "ceifa"
+            "tumba", "modal", "sócio", "penca", "sacar", "harém", "feira", "sugar", "digna", "ceifa",
+			"verme", "mosca", "pisou", "olhou", "sorri", "jesus", "pariu", "judia", "amara", "daria",
+			"jogou", "diabo", "japão", "diria", "faria", "regar", "arena", "lagoa", "subiu", "votou"
+
         ];
-        
+
         const now = new Date();
         const currentHour = now.getHours();
         const currentMinutes = now.getMinutes();
         const intervalIndex = Math.floor(currentMinutes / 10);
         const gameKey = `wordGame_${currentHour}_${intervalIndex}`;
-        const secretWord = words[intervalIndex % words.length];
+
+        // Verifica se já existe uma palavra salva para este intervalo, senão escolhe uma aleatoriamente
+        let secretWord = localStorage.getItem(`${gameKey}_secretWord`);
+        if (!secretWord) {
+            secretWord = words[Math.floor(Math.random() * words.length)];
+            localStorage.setItem(`${gameKey}_secretWord`, secretWord);
+        }
 
         let attempts = 0;
         let currentGuess = "";
@@ -295,7 +304,7 @@
             const rows = [
                 "QWERTYUIOP",
                 "ASDFGHJKL",
-                "ZXCVBNM"
+                "ZXCVBNMÇ"
             ];
 
             rows.forEach(rowLetters => {
@@ -322,7 +331,7 @@
 
             let enter = document.createElement("div");
             enter.classList.add("key", "special-key");
-            enter.innerText = "Enter";
+            enter.innerText = "↵";
             enter.addEventListener("click", () => handleKeyClick("Enter"));
             specialRow.appendChild(enter);
 
@@ -335,6 +344,8 @@
                 let row = document.getElementsByClassName("row")[i];
                 let guessLetters = guesses[i].word.split("");
                 let letters = secretWord.split("");
+                let normalizedGuess = normalizeWord(guesses[i].word);
+                let normalizedGuessLetters = normalizedGuess.split("");
                 let letterCount = {};
 
                 for (let letter of letters) {
@@ -370,7 +381,7 @@
         document.addEventListener("keydown", function(event) {
             if (gameOver) return;
 
-            if (event.key.match(/^[a-zA-Z]$/) && currentGuess.length < 5) {
+            if (event.key.match(/^[a-zA-ZçÇ]$/) && currentGuess.length < 5) {
                 currentGuess += event.key.toLowerCase();
                 updateBoard();
             } else if (event.key === "Backspace" && currentGuess.length > 0) {
@@ -385,7 +396,7 @@
         function handleKeyClick(key) {
             if (gameOver) return;
 
-            if (key.match(/^[a-z]$/) && currentGuess.length < 5) {
+            if (key.match(/^[a-zç]$/) && currentGuess.length < 5) {
                 currentGuess += key;
                 updateBoard();
             } else if (key === "Backspace" && currentGuess.length > 0) {
