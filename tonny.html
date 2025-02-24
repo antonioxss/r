@@ -79,16 +79,12 @@
             width: 0;
             height: 0;
         }
-		        }
-
+        a {
+            color: white;
+            text-decoration: none;
+            font-size: 10px;
+        }
     </style>
-<style>
-  a {
-    color: white;
-    text-decoration: none;
-    font-size: 10px;
-  }
-</style>
 </head>
 <body>
     <h1>TonnyGames [BETA]</h1>
@@ -96,7 +92,8 @@
     <p id="message"></p>
     <p id="timer"></p>
     <input type="text" id="hiddenInput" autocorrect="off" autocapitalize="off" spellcheck="false">
-    
+    <a href="https://www.instagram.com/antonio_ssh/" target="_blank">~ Antonio Pedro ~</a>
+
     <script>
         const words = [
             "chave", "vexar", "fazei", "juris", "pênis", "trope", "fugir", "bossa", "zumbi", "mante", 
@@ -213,19 +210,18 @@
         let currentGuess = "";
         let gameOver = false;
         let guesses = JSON.parse(localStorage.getItem(`${gameKey}_guesses`)) || [];
+        let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-        // Função para remover acentos e substituir ç por c
         function normalizeWord(word) {
             return word
                 .toLowerCase()
                 .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "") // Remove acentos
-                .replace(/ç/g, "c"); // Substitui ç por c
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/ç/g, "c");
         }
 
         const normalizedSecretWord = normalizeWord(secretWord);
 
-        // Desativa o botão direito do mouse
         document.addEventListener("contextmenu", function(event) {
             event.preventDefault();
         });
@@ -277,7 +273,7 @@
                     letterCount[letter] = (letterCount[letter] || 0) + 1;
                 }
 
-                let tempLetterCount = { ...letterCount }; // Cria uma cópia para avaliação de "present"
+                let tempLetterCount = { ...letterCount };
                 for (let j = 0; j < 5; j++) {
                     let cell = row.children[j];
                     cell.innerText = guessLetters[j].toUpperCase();
@@ -304,32 +300,45 @@
 
         function focusInput() {
             const input = document.getElementById("hiddenInput");
-            input.focus();
+            setTimeout(() => {
+                input.focus();
+            }, 100);
         }
 
-        document.addEventListener("keydown", handleKeyInput);
-        
-        document.getElementById("hiddenInput").addEventListener("input", function(event) {
-            const key = event.data;
-            if (key && key.match(/^[a-zA-Z]$/) && currentGuess.length < 5) {
-                currentGuess += key.toLowerCase();
-                updateBoard();
-            }
-            event.target.value = "";
-        });
+        // Detecta se é mobile e usa o evento apropriado
+        if (isMobile) {
+            document.getElementById("hiddenInput").addEventListener("input", function(event) {
+                if (gameOver) return;
 
-        function handleKeyInput(event) {
-            if (gameOver) return; 
-            
-            if (event.key.match(/^[a-zA-Z]$/) && currentGuess.length < 5) {
-                currentGuess += event.key.toLowerCase();
-            } else if (event.key === "Backspace" && currentGuess.length > 0) {
+                const key = event.data;
+                if (key && key.match(/^[a-zA-Z]$/) && currentGuess.length < 5) {
+                    currentGuess += key.toLowerCase();
+                    updateBoard();
+                }
+                event.target.value = "";
+            });
+        } else {
+            document.addEventListener("keydown", function(event) {
+                if (gameOver) return;
+
+                if (event.key.match(/^[a-zA-Z]$/) && currentGuess.length < 5) {
+                    currentGuess += event.key.toLowerCase();
+                    updateBoard();
+                }
+            });
+        }
+
+        // Evento separado para Backspace e Enter, funciona em ambos os dispositivos
+        document.addEventListener("keydown", function(event) {
+            if (gameOver) return;
+
+            if (event.key === "Backspace" && currentGuess.length > 0) {
                 currentGuess = currentGuess.slice(0, -1);
+                updateBoard();
             } else if (event.key === "Enter" && currentGuess.length === 5) {
                 checkGuess();
             }
-            updateBoard();
-        }
+        });
         
         function updateBoard() {
             if (gameOver) return; 
@@ -352,7 +361,7 @@
                 letterCount[letter] = (letterCount[letter] || 0) + 1;
             }
             
-            let tempLetterCount = { ...letterCount }; // Cópia para "present"
+            let tempLetterCount = { ...letterCount };
             for (let i = 0; i < 5; i++) {
                 let cell = row.children[i];
                 cell.innerText = guessLetters[i].toUpperCase();
@@ -377,7 +386,6 @@
             guesses.push({ word: currentGuess });
             localStorage.setItem(`${gameKey}_guesses`, JSON.stringify(guesses));
 
-            // Aceita a palavra sem acentos ou ç
             if (normalizedGuess === normalizedSecretWord) {
                 revealWordWithDelay(row);
                 localStorage.setItem(gameKey, "won"); 
@@ -426,6 +434,4 @@
         setInterval(updateTimer, 1000);
     </script>
 </body>
-	<a href="https://www.instagram.com/antonio_ssh/" target="_blank">~ Antonio Pedro ~</a>
-
 </html>
