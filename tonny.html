@@ -44,9 +44,14 @@
             font-weight: bold;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
             transition: all 0.3s ease;
+            cursor: pointer;
         }
         .cell:hover {
             box-shadow: 0 6px 10px rgba(0, 0, 0, 0.6);
+        }
+        .selected {
+            border-color: #ffbf00;
+            box-shadow: 0 0 10px #ffbf00;
         }
         .correct { 
             background-color: #4CAF50 !important; 
@@ -228,9 +233,8 @@
             "fátuo", "gueto", "canil", "choça", "bugre", "lento", "vário", "cardo", "míope", "corar", 
             "custo", "corte", "pular", "rácio", "mania", "versa", "nesga", "focar", "sadio", "ferir", 
             "tumba", "modal", "sócio", "penca", "sacar", "harém", "feira", "sugar", "digna", "ceifa",
-			"verme", "mosca", "pisou", "olhou", "sorri", "jesus", "pariu", "judia", "amara", "daria",
-			"jogou", "diabo", "japão", "diria", "faria", "regar", "arena", "lagoa", "subiu", "votou"
-
+            "verme", "mosca", "pisou", "olhou", "sorri", "jesus", "pariu", "judia", "amara", "daria",
+            "jogou", "diabo", "japão", "diria", "faria", "regar", "arena", "lagoa", "subiu", "votou"
         ];
 
         const now = new Date();
@@ -239,7 +243,6 @@
         const intervalIndex = Math.floor(currentMinutes / 10);
         const gameKey = `wordGame_${currentHour}_${intervalIndex}`;
 
-        // Verifica se já existe uma palavra salva para este intervalo, senão escolhe uma aleatoriamente
         let secretWord = localStorage.getItem(`${gameKey}_secretWord`);
         if (!secretWord) {
             secretWord = words[Math.floor(Math.random() * words.length)];
@@ -247,9 +250,10 @@
         }
 
         let attempts = 0;
-        let currentGuess = "";
+        let currentGuess = ["", "", "", "", ""]; // Array para representar as 5 posições
         let gameOver = false;
         let guesses = JSON.parse(localStorage.getItem(`${gameKey}_guesses`)) || [];
+        let selectedCellIndex = 0; // Índice da célula selecionada (0 a 4)
 
         function normalizeWord(word) {
             return word
@@ -291,14 +295,24 @@
                 for (let j = 0; j < 5; j++) {
                     let cell = document.createElement("div");
                     cell.classList.add("cell");
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.addEventListener("click", () => selectCell(i, j));
                     row.appendChild(cell);
                 }
                 board.appendChild(row);
             }
             createKeyboard();
             restoreGuesses();
+            updateBoard(); // Atualiza a linha atual com a célula selecionada
         }
         
+        function selectCell(rowIndex, colIndex) {
+            if (rowIndex !== attempts || gameOver) return; // Só permite selecionar na linha atual
+            selectedCellIndex = colIndex;
+            updateBoard(); // Atualiza a visualização da célula selecionada
+        }
+
         function createKeyboard() {
             const keyboard = document.getElementById("keyboard");
             const rows = [
@@ -345,7 +359,6 @@
                 let guessLetters = guesses[i].word.split("");
                 let letters = secretWord.split("");
                 let normalizedGuess = normalizeWord(guesses[i].word);
-                let normalizedGuessLetters = normalizedGuess.split("");
                 let letterCount = {};
 
                 for (let letter of letters) {
@@ -374,35 +387,36 @@
                     }
                 }
             }
-            updateBoard();
         }
 
-        // Suporte ao teclado físico
         document.addEventListener("keydown", function(event) {
             if (gameOver) return;
 
-            if (event.key.match(/^[a-zA-ZçÇ]$/) && currentGuess.length < 5) {
-                currentGuess += event.key.toLowerCase();
+            if (event.key.match(/^[a-zA-ZçÇ]$/)) {
+                currentGuess[selectedCellIndex] = event.key.toLowerCase();
+                selectedCellIndex = Math.min(selectedCellIndex + 1, 4); // Move para a próxima célula
                 updateBoard();
-            } else if (event.key === "Backspace" && currentGuess.length > 0) {
-                currentGuess = currentGuess.slice(0, -1);
+            } else if (event.key === "Backspace") {
+                currentGuess[selectedCellIndex] = "";
+                selectedCellIndex = Math.max(selectedCellIndex - 1, 0); // Move para a célula anterior
                 updateBoard();
-            } else if (event.key === "Enter" && currentGuess.length === 5) {
+            } else if (event.key === "Enter" && currentGuess.every(letter => letter !== "")) {
                 checkGuess();
             }
         });
 
-        // Suporte ao teclado virtual
         function handleKeyClick(key) {
             if (gameOver) return;
 
-            if (key.match(/^[a-zç]$/) && currentGuess.length < 5) {
-                currentGuess += key;
+            if (key.match(/^[a-zç]$/)) {
+                currentGuess[selectedCellIndex] = key;
+                selectedCellIndex = Math.min(selectedCellIndex + 1, 4); // Move para a próxima célula
                 updateBoard();
-            } else if (key === "Backspace" && currentGuess.length > 0) {
-                currentGuess = currentGuess.slice(0, -1);
+            } else if (key === "Backspace") {
+                currentGuess[selectedCellIndex] = "";
+                selectedCellIndex = Math.max(selectedCellIndex - 1, 0); // Move para a célula anterior
                 updateBoard();
-            } else if (key === "Enter" && currentGuess.length === 5) {
+            } else if (key === "Enter" && currentGuess.every(letter => letter !== "")) {
                 checkGuess();
             }
         }
@@ -413,69 +427,77 @@
             for (let i = 0; i < 5; i++) {
                 let cell = row.children[i];
                 cell.innerText = currentGuess[i] ? currentGuess[i].toUpperCase() : "";
+                cell.classList.remove("selected");
+                if (i === selectedCellIndex) {
+                    cell.classList.add("selected"); // Destaca a célula selecionada
+                }
             }
         }
         
         function checkGuess() {
             let row = document.getElementsByClassName("row")[attempts];
-            let letters = secretWord.split(""); 
-            let guessLetters = currentGuess.split("");
-            let normalizedGuess = normalizeWord(currentGuess); 
+            let letters = secretWord.split("");
+            let guessLetters = currentGuess.slice(); // Cópia do palpite atual
+            let normalizedGuess = normalizeWord(currentGuess.join(""));
             let letterCount = {};
-            
-            for (let letter of letters) {
+
+            for (let letter of normalizedSecretWord.split("")) {
                 letterCount[letter] = (letterCount[letter] || 0) + 1;
             }
-            
+
             let tempLetterCount = { ...letterCount };
+
             for (let i = 0; i < 5; i++) {
                 let cell = row.children[i];
                 cell.innerText = guessLetters[i].toUpperCase();
-                if (guessLetters[i] === letters[i]) {
+                cell.classList.remove("selected");
+                if (normalizeWord(guessLetters[i]) === normalizeWord(letters[i])) {
                     cell.classList.add("correct");
-                    tempLetterCount[guessLetters[i]]--;
+                    tempLetterCount[normalizeWord(guessLetters[i])]--;
                     guessLetters[i] = null;
                 }
             }
-            
+
             for (let i = 0; i < 5; i++) {
-                if (guessLetters[i] && tempLetterCount[guessLetters[i]] > 0) {
+                if (guessLetters[i] && tempLetterCount[normalizeWord(guessLetters[i])] > 0) {
                     let cell = row.children[i];
                     cell.classList.add("present");
-                    tempLetterCount[guessLetters[i]]--;
+                    tempLetterCount[normalizeWord(guessLetters[i])]--;
                 } else if (guessLetters[i]) {
                     let cell = row.children[i];
                     cell.classList.add("absent");
                 }
             }
-            
-            guesses.push({ word: currentGuess });
+
+            guesses.push({ word: currentGuess.join("") });
             localStorage.setItem(`${gameKey}_guesses`, JSON.stringify(guesses));
 
             if (normalizedGuess === normalizedSecretWord) {
                 revealWordWithDelay(row);
-                localStorage.setItem(gameKey, "won"); 
+                localStorage.setItem(gameKey, "won");
             } else if (++attempts >= 6) {
                 document.getElementById("message").innerText = "Fim de jogo! A palavra era: " + secretWord.toUpperCase();
                 gameOver = true;
-                localStorage.setItem(gameKey, "lost"); 
-                disableBoard(); 
+                localStorage.setItem(gameKey, "lost");
+                disableBoard();
             }
-            currentGuess = "";
+            currentGuess = ["", "", "", "", ""]; // Reseta o palpite
+            selectedCellIndex = 0; // Volta para a primeira célula
+            updateBoard();
         }
         
         function revealWordWithDelay(row) {
             for (let i = 0; i < 5; i++) {
                 setTimeout(() => {
                     let cell = row.children[i];
-                    cell.innerText = secretWord[i].toUpperCase(); 
+                    cell.innerText = secretWord[i].toUpperCase();
                     cell.classList.add("correct");
                 }, i * 300);
             }
             setTimeout(() => {
                 document.getElementById("message").innerText = "Parabéns! Você acertou a palavra: " + secretWord.toUpperCase();
                 gameOver = true;
-                disableBoard(); 
+                disableBoard();
             }, 1500);
         }
         
@@ -483,8 +505,8 @@
             const now = new Date();
             const minutes = now.getMinutes();
             const seconds = now.getSeconds();
-            const minutesInInterval = minutes % 10; 
-            const secondsLeftInInterval = (10 - minutesInInterval - 1) * 60 + (60 - seconds); 
+            const minutesInInterval = minutes % 10;
+            const secondsLeftInInterval = (10 - minutesInInterval - 1) * 60 + (60 - seconds);
             
             const minutesLeft = Math.floor(secondsLeftInInterval / 60);
             const secondsLeft = secondsLeftInInterval % 60;
@@ -493,9 +515,8 @@
                 `Próxima palavra em: ${minutesLeft} min e ${secondsLeft} seg`;
         }
         
-        // Inicializa o jogo
         createBoard();
-        checkGameStatus(); 
+        checkGameStatus();
         updateTimer();
         setInterval(updateTimer, 1000);
     </script>
