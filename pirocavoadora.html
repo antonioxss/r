@@ -9,22 +9,22 @@
             color: #00FF00; /* Verde clássico de terminal */
             font-family: 'Courier New', Courier, monospace;
             margin: 0;
-            padding: 20px;
+            padding: 0px;
         }
         h1 {
-            font-size: 20px;
+            font-size: 18px;
             text-align: center;
             text-transform: uppercase;
-            margin-bottom: 12px;
+            margin-bottom: 2px;
         }
         #lista-arquivos {
             list-style: none;
             padding: 0;
         }
         #lista-arquivos li {
-            margin: 10px 0;
+            margin: 5px 0;
         }
-        #lista-arquivos a {
+        #  #lista-arquivos a {
             color: #00FF00;
             text-decoration: none;
             cursor: pointer;
@@ -38,9 +38,9 @@
             background-color: #111;
             border: 1px solid #00FF00;
             white-space: pre-wrap; /* Preserva quebras de linha e espaços */
-            max-height: 700px;
+            max-height: 600px;
             overflow-y: auto;
-            font-size: 2px;
+            font-size: 12px;
         }
         #conteudo-arquivo:empty::before {
             content: "Selecione um arquivo acima para visualizar...";
@@ -72,6 +72,9 @@
                 }
                 const arquivos = await resposta.json();
 
+                // Ordena os arquivos alfabeticamente
+                arquivos.sort((a, b) => a.name.localeCompare(b.name));
+
                 arquivos.forEach(arquivo => {
                     if (arquivo.name.endsWith(".txt")) { // Filtra apenas .txt
                         const item = document.createElement("li");
@@ -91,7 +94,7 @@
             }
         }
 
-        // Função para carregar e exibir o conteúdo do arquivo
+        // Função para carregar e processar o conteúdo do arquivo
         async function carregarConteudo(urlArquivo, nomeArquivo) {
             try {
                 const resposta = await fetch(urlArquivo);
@@ -99,7 +102,25 @@
                     throw new Error("Erro ao carregar o arquivo");
                 }
                 const texto = await resposta.text();
-                conteudoDiv.textContent = `> ${nomeArquivo}\n\n${texto}`;
+
+                // Regex para capturar email:senha
+                const regex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}):([^\s]+)/g;
+                let resultado = "";
+                let match;
+
+                // Extrai todos os pares email:senha do texto
+                while ((match = regex.exec(texto)) !== null) {
+                    const email = match[1];
+                    const senha = match[2];
+                    resultado += `> Email: ${email}\n> Senha: ${senha}\n\n`;
+                }
+
+                // Se não houver correspondências, exibe mensagem
+                if (!resultado) {
+                    resultado = "> Nenhum padrão email:senha encontrado no arquivo.";
+                }
+
+                conteudoDiv.textContent = `> ${nomeArquivo}\n\n${resultado}`;
             } catch (erro) {
                 console.error("Erro ao carregar conteúdo:", erro);
                 conteudoDiv.textContent = "> Erro ao carregar o arquivo.";
