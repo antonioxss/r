@@ -24,13 +24,37 @@
         #lista-arquivos li {
             margin: 5px 0;
         }
-        #  #lista-arquivos a {
+        #lista-arquivos a {
             color: #00FF00;
             text-decoration: none;
             cursor: pointer;
         }
         #lista-arquivos a:hover {
             text-decoration: underline;
+        }
+        #busca-container {
+            margin-top: 12px;
+            text-align: center;
+        }
+        #busca-input {
+            background-color: #111;
+            color: #00FF00;
+            border: 1px solid #00FF00;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 5px;
+            width: 200px;
+        }
+        #busca-btn {
+            background-color: #111;
+            color: #00FF00;
+            border: 1px solid #00FF00;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #busca-btn:hover {
+            background-color: #00FF00;
+            color: #000;
         }
         #conteudo-arquivo {
             margin-top: 12px;
@@ -51,6 +75,10 @@
 <body>
     <h1>Antonio - Painel Hacking</h1>
     <ul id="lista-arquivos"></ul>
+    <div id="busca-container">
+        <input type="text" id="busca-input" placeholder="Buscar no arquivo...">
+        <button id="busca-btn">Buscar</button>
+    </div>
     <div id="conteudo-arquivo"></div>
 
     <script>
@@ -62,6 +90,9 @@
         // Elementos da página
         const lista = document.getElementById("lista-arquivos");
         const conteudoDiv = document.getElementById("conteudo-arquivo");
+        const buscaInput = document.getElementById("busca-input");
+        const buscaBtn = document.getElementById("busca-btn");
+        let conteudoOriginal = ""; // Armazena o conteúdo original para busca
 
         // Função para buscar e listar os arquivos
         async function listarArquivos() {
@@ -120,12 +151,53 @@
                     resultado = "> Nenhum padrão email:senha encontrado no arquivo.";
                 }
 
-                conteudoDiv.textContent = `> ${nomeArquivo}\n\n${resultado}`;
+                conteudoOriginal = `> ${nomeArquivo}\n\n${resultado}`;
+                conteudoDiv.textContent = conteudoOriginal;
+                buscaInput.value = ""; // Limpa o campo de busca ao carregar novo conteúdo
             } catch (erro) {
                 console.error("Erro ao carregar conteúdo:", erro);
                 conteudoDiv.textContent = "> Erro ao carregar o arquivo.";
             }
         }
+
+        // Função para filtrar emails e senhas com base na busca
+        function filtrarBusca() {
+            const termo = buscaInput.value.trim();
+            if (!termo) {
+                conteudoDiv.textContent = conteudoOriginal; // Restaura o conteúdo original
+                return;
+            }
+
+            const linhas = conteudoOriginal.split("\n");
+            let resultadoFiltrado = linhas[0] + "\n\n"; // Mantém o nome do arquivo (> nomeArquivo)
+            const termoLower = termo.toLowerCase();
+
+            // Processa o conteúdo linha por linha
+            for (let i = 2; i < linhas.length; i += 3) { // Pula linhas vazias e processa pares
+                const linhaEmail = linhas[i]; // > Email: ...
+                const linhaSenha = linhas[i + 1]; // > Senha: ...
+
+                if (linhaEmail && linhaSenha) {
+                    const email = linhaEmail.replace("> Email: ", "").toLowerCase();
+                    const senha = linhaSenha.replace("> Senha: ", "").toLowerCase();
+
+                    // Verifica se o termo está no email ou na senha
+                    if (email.includes(termoLower) || senha.includes(termoLower)) {
+                        resultadoFiltrado += `${linhaEmail}\n${linhaSenha}\n\n`;
+                    }
+                }
+            }
+
+            // Se não houver resultados, exibe mensagem
+            if (resultadoFiltrado === linhas[0] + "\n\n") {
+                resultadoFiltrado += "> Nenhum resultado encontrado para '" + termo + "'.";
+            }
+
+            conteudoDiv.textContent = resultadoFiltrado;
+        }
+
+        // Evento do botão de busca
+        buscaBtn.addEventListener("click", filtrarBusca);
 
         // Inicia a listagem ao carregar a página
         listarArquivos();
