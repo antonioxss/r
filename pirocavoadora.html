@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Antonio</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #00FF00; /* Verde clássico de terminal */
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        #lista-arquivos {
+            list-style: none;
+            padding: 0;
+        }
+        #lista-arquivos li {
+            margin: 10px 0;
+        }
+        #lista-arquivos a {
+            color: #00FF00;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        #lista-arquivos a:hover {
+            text-decoration: underline;
+        }
+        #conteudo-arquivo {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #111;
+            border: 1px solid #00FF00;
+            white-space: pre-wrap; /* Preserva quebras de linha e espaços */
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        #conteudo-arquivo:empty::before {
+            content: "Selecione um arquivo para visualizar...";
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Antonio - Painel Hacking</h1>
+    <ul id="lista-arquivos"></ul>
+    <div id="conteudo-arquivo"></div>
+
+    <script>
+        // Configuração do repositório
+        const usuario = "antonioxss";
+        const repositorio = "r";
+        const url = `https://api.github.com/repos/${usuario}/${repositorio}/contents/`;
+
+        // Elementos da página
+        const lista = document.getElementById("lista-arquivos");
+        const conteudoDiv = document.getElementById("conteudo-arquivo");
+
+        // Função para buscar e listar os arquivos
+        async function listarArquivos() {
+            try {
+                const resposta = await fetch(url);
+                if (!resposta.ok) {
+                    throw new Error("Erro ao acessar a API do GitHub");
+                }
+                const arquivos = await resposta.json();
+
+                arquivos.forEach(arquivo => {
+                    if (arquivo.name.endsWith(".txt")) { // Filtra apenas .txt
+                        const item = document.createElement("li");
+                        const link = document.createElement("a");
+                        link.textContent = arquivo.name;
+                        link.addEventListener("click", (e) => {
+                            e.preventDefault();
+                            carregarConteudo(arquivo.download_url, arquivo.name);
+                        });
+                        item.appendChild(link);
+                        lista.appendChild(item);
+                    }
+                });
+            } catch (erro) {
+                console.error("Erro ao buscar arquivos:", erro);
+                lista.innerHTML = "<li>Erro ao carregar os arquivos.</li>";
+            }
+        }
+
+        // Função para carregar e exibir o conteúdo do arquivo
+        async function carregarConteudo(urlArquivo, nomeArquivo) {
+            try {
+                const resposta = await fetch(urlArquivo);
+                if (!resposta.ok) {
+                    throw new Error("Erro ao carregar o arquivo");
+                }
+                const texto = await resposta.text();
+                conteudoDiv.textContent = `> ${nomeArquivo}\n\n${texto}`;
+            } catch (erro) {
+                console.error("Erro ao carregar conteúdo:", erro);
+                conteudoDiv.textContent = "> Erro ao carregar o arquivo.";
+            }
+        }
+
+        // Inicia a listagem ao carregar a página
+        listarArquivos();
+    </script>
+</body>
+<br><center></center>
+</html>
