@@ -2,10 +2,10 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>AntonioExploits</title>
+    <title>AntonioPedro</title>
 </head>
 <body>
-    <h1>Exploits</h1>
+    <h1>AntonioPedro</h1>
     <ul>
     <?php
     // Diretório atual (onde o PHP está rodando)
