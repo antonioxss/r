@@ -2,11 +2,11 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Antonio RGB Wave</title>
+  <title>Index</title>
   <style>
     body {
       margin: 0;
-      height: 100vh;
+      height: 20vh;
       background-color: #111;
       display: flex;
       align-items: center;
@@ -14,42 +14,53 @@
     }
 
     h1 {
-      font-size: 5rem;
-      font-family: sans-serif;
+      font-size: 3rem;
+      font-family: verdana;
       display: flex;
       gap: 10px;
     }
 
-    .letter {
-      animation: wave 5s ease-in-out infinite;
+    .letra {
+      animation: onda 5s ease-in-out infinite;
     }
 
-    .letter:nth-child(1) { animation-delay: 0s; }
-    .letter:nth-child(2) { animation-delay: 0.3s; }
-    .letter:nth-child(3) { animation-delay: 0.6s; }
-    .letter:nth-child(4) { animation-delay: 0.9s; }
-    .letter:nth-child(5) { animation-delay: 1.2s; }
-    .letter:nth-child(6) { animation-delay: 1.5s; }
-    .letter:nth-child(7) { animation-delay: 1.8s; }
+    /* Atrasos diferentes para criar o efeito de onda */
+    .letra:nth-child(1) { animation-delay: 0s; }
+    .letra:nth-child(2) { animation-delay: 0.3s; }
+    .letra:nth-child(3) { animation-delay: 0.6s; }
+    .letra:nth-child(4) { animation-delay: 0.9s; }
+    .letra:nth-child(5) { animation-delay: 1.2s; }
+    .letra:nth-child(6) { animation-delay: 1.5s; }
+    .letra:nth-child(7) { animation-delay: 1.8s; }
 
-    @keyframes wave {
+    /* Animação com as cores desejadas */
+    @keyframes onda {
       0%   { color: #ff007f; }  /* rosa neon */
-      25%  { color: #8a2be2; }  /* roxo elétrico */
-      50%  { color: #1e90ff; }  /* azul vibrante */
+      25%  { color: #8a2be2; }  /* roxo */
+      50%  { color: #1e90ff; }  /* azul */
       75%  { color: #ff0000; }  /* vermelho */
       100% { color: #ff007f; }  /* volta pro rosa */
     }
   </style>
+
+  <script>
+    // Desativa o clique com o botão direito do mouse
+    document.addEventListener('contextmenu', function(event) {
+      event.preventDefault();
+    });
+  </script>
 </head>
 <body>
   <h1>
-    <span class="letter">A</span>
-    <span class="letter">n</span>
-    <span class="letter">t</span>
-    <span class="letter">o</span>
-    <span class="letter">n</span>
-    <span class="letter">i</span>
-    <span class="letter">o</span>
+    [ 
+    <span class="letra">A</span>
+    <span class="letra">n</span>
+    <span class="letra">t</span>
+    <span class="letra">o</span>
+    <span class="letra">n</span>
+    <span class="letra">i</span>
+    <span class="letra">o</span>
+    ]
   </h1>
 </body>
 </html>
