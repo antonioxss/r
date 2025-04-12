@@ -53,7 +53,7 @@
       background-color: #2a2a2a;
       border: 1px solid #444;
       border-radius: 5px;
-      width: 450px;
+      width: 430px;
       overflow: hidden;
     }
 
@@ -101,11 +101,13 @@
       padding: 8px 16px;
       border-radius: 4px;
       cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s;
     }
 
     .controls button.active {
-      background-color: #444;
-      border-color: #777;
+      background-color: #666;
+      border-color: #aaa;
+      font-weight: bold;
     }
 
     #completed-message {
@@ -145,11 +147,21 @@
 
   <script>
     let baseUrl = 'https://www.habbo.com.br/habbo-imaging/avatarimage?hb=img&user=';
+    let isChecking = false;
 
     function setBaseUrl(button, url) {
+      if (isChecking) {
+        isChecking = false;
+        completedMessage.textContent = "Verificação interrompida. Por favor, faça o upload da wordlist novamente.";
+      }
+
       baseUrl = url;
       document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
       button.classList.add('active');
+
+      availableConsole.textContent = "";
+      unavailableConsole.textContent = "";
+      fileInput.value = "";
     }
 
     const fileInput = document.getElementById("fileInput");
@@ -173,15 +185,20 @@
       availableConsole.textContent = "";
       unavailableConsole.textContent = "";
       completedMessage.textContent = "";
+      isChecking = true;
 
       for (let i = 0; i < nicks.length; i++) {
+        if (!isChecking) return;
         const nick = nicks[i];
         const url = baseUrl + encodeURIComponent(nick);
         await checkNickname(nick, url);
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      completedMessage.textContent = "Verificação concluída.";
+      if (isChecking) {
+        completedMessage.textContent = "Verificação concluída.";
+        isChecking = false;
+      }
     }
 
     function checkNickname(nick, url) {
