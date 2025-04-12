@@ -1,1 +1,1 @@
-document.write("Olá");
+alert("oi");
