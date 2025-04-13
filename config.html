@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Arquivos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1e1e1e; /* Fundo escuro */
+            color: #e0e0e0; /* Texto claro */
+        }
+        h1 {
+            color: #ffffff; /* Título branco */
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 10px 0;
+            background-color: #2d2d2d; /* Fundo dos itens */
+            padding: 10px;
+            border-radius: 5px;
+        }
+        a {
+            color: #66b0ff; /* Links azuis claros */
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+            color: #99ccff; /* Cor ao passar o mouse */
+        }
+        #loading {
+            color: #888888; /* Texto de carregamento cinza */
+        }
+        #error {
+            color: #ff5555; /* Erro em vermelho claro */
+        }
+    </style>
+</head>
+<body>
+    <h1>Arquivos no Diretório</h1>
+    <div id="loading">Carregando arquivos...</div>
+    <div id="error" style="display: none;"></div>
+    <ul id="file-list"></ul>
+
+    <script>
+        async function fetchFiles() {
+            const directoryUrl = 'https://antoniopedro.fun/';
+            const fileList = document.getElementById('file-list');
+            const loading = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+
+            try {
+                const response = await fetch(directoryUrl);
+                if (!response.ok) {
+                    throw new Error(`Erro ao buscar arquivos: ${response.status} ${response.statusText}`);
+                }
+                const html = await response.text();
+
+                // Parsear o HTML retornado
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const links = doc.querySelectorAll('a'); // Links para os arquivos no directory listing
+
+                loading.style.display = 'none';
+
+                if (links.length === 0) {
+                    fileList.innerHTML = '<li>Nenhum arquivo encontrado.</li>';
+                    return;
+                }
+
+                // Listar os arquivos
+                links.forEach(link => {
+                    const fileName = link.textContent;
+                    // Ignorar links como "Parent Directory" ou outros que não são arquivos
+                    if (fileName !== 'Parent Directory' && !fileName.startsWith('?') && !fileName.startsWith('/')) {
+                        const li = document.createElement('li');
+                        const a = document.createElement('a');
+                        a.href = `${directoryUrl}${fileName}`; // Link direto (ex.: https://antoniopedro.fun/index.html)
+                        a.textContent = fileName;
+                        a.target = '_blank'; // Abrir em nova guia
+                        li.appendChild(a);
+                        fileList.appendChild(li);
+                    }
+                });
+            } catch (error) {
+                loading.style.display = 'none';
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = `Erro: ${error.message}`;
+            }
+        }
+
+        // Executar ao carregar a página
+        window.onload = fetchFiles;
+    </script>
+</body>
+</html>
