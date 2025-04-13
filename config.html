@@ -1,101 +1,147 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Arquivos</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #1e1e1e;
-            color: #e0e0e0;
-        }
-        h1 {
-            color: #ffffff;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            margin: 10px 0;
-            background-color: #2d2d2d;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        a {
-            color: #66b0ff;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-            color: #99ccff;
-        }
-        #loading {
-            color: #888888;
-        }
-        #error {
-            color: #ff5555;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista de Arquivos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+    }
+    h1, h2 {
+      color: #ffffff;
+      text-align: center;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      margin: 8px 0;
+      background-color: #2d2d2d;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+    }
+    a {
+      color: #66b0ff;
+      text-decoration: none;
+    }
+    a:hover {
+      color: #99ccff;
+    }
+    #loading {
+      text-align: center;
+      color: #888888;
+    }
+    #error {
+      text-align: center;
+      color: #ff5555;
+    }
+    #login {
+      margin-top: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #login input {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: none;
+      width: 200px;
+    }
+    #login button {
+      padding: 10px 20px;
+      border-radius: 5px;
+      border: none;
+      background-color: #66b0ff;
+      color: white;
+      cursor: pointer;
+    }
+    #login button:hover {
+      background-color: #99ccff;
+    }
+    #fail {
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
 </head>
-<body>
-    <h1>Arquivos no Diretório</h1>
+<body oncontextmenu="return false">
+
+  <div id="login">
+    <h2>🔐 Acesso Restrito</h2>
+    <input type="password" id="senha" placeholder="Digite a senha" />
+    <button onclick="validar()">Entrar</button>
+    <div id="fail" style="display:none;">Senha incorreta.</div>
+  </div>
+
+  <div id="conteudo" style="display:none;">
+    <h1>Arquivos Disponíveis</h1>
     <div id="loading">Carregando arquivos...</div>
     <div id="error" style="display: none;"></div>
     <ul id="file-list"></ul>
+  </div>
 
-    <script>
-        async function fetchFiles() {
-            const apiUrl = 'https://api.github.com/repos/tonnyxss/r/contents/';
-            const linkBaseUrl = 'https://tonnyxss.github.io/r/';
-            const fileList = document.getElementById('file-list');
-            const loading = document.getElementById('loading');
-            const errorDiv = document.getElementById('error');
+  <script>
+    function codificar(str) {
+      return str.split('').reduce((acc, c) => acc + c.charCodeAt(0) * 7, 0);
+    }
 
-            try {
-                console.log('Iniciando requisição para:', apiUrl);
-                const response = await fetch(apiUrl, {
-                    headers: {
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-                console.log('Status:', response.status, response.statusText);
-                if (!response.ok) throw new Error('Erro ao buscar arquivos');
-                const files = await response.json();
-                console.log('Arquivos:', files);
+    function validar() {
+      const senha = document.getElementById("senha").value;
+      if (codificar(senha) === 1400) {
+        document.getElementById("login").style.display = "none";
+        document.getElementById("conteudo").style.display = "block";
+        carregarArquivos();
+      } else {
+        document.getElementById("fail").style.display = "block";
+      }
+    }
 
-                loading.style.display = 'none';
+    function carregarArquivos() {
+      const usuario = atob("dG9ubnl4c3M=");
+      const repo = "r";
+      const apiUrl = `https://api.github.com/repos/${usuario}/${repo}/contents/`;
+      const linkBase = `https://${usuario}.github.io/${repo}/`;
 
-                if (files.length === 0) {
-                    fileList.innerHTML = '<li>Nenhum arquivo encontrado.</li>';
-                    return;
-                }
+      const fileList = document.getElementById("file-list");
+      const loading = document.getElementById("loading");
+      const error = document.getElementById("error");
 
-                files.forEach(file => {
-                    if (file.type === 'file') {
-                        console.log('Arquivo:', file.name);
-                        const li = document.createElement('li');
-                        const a = document.createElement('a');
-                        a.href = `${linkBaseUrl}${file.name}`;
-                        a.textContent = file.name;
-                        a.target = '_blank';
-                        li.appendChild(a);
-                        fileList.appendChild(li);
-                    }
-                });
-            } catch (error) {
-                console.log('Erro:', error);
-                loading.style.display = 'none';
-                errorDiv.style.display = 'block';
-                errorDiv.textContent = `Erro: ${error.message}`;
+      fetch(apiUrl, {
+        headers: { 'Accept': 'application/vnd.github.v3+json' }
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Erro ao buscar arquivos.");
+          return res.json();
+        })
+        .then(data => {
+          loading.style.display = "none";
+          if (data.length === 0) {
+            fileList.innerHTML = "<li>Nenhum arquivo encontrado.</li>";
+            return;
+          }
+          data.forEach(file => {
+            if (file.type === "file") {
+              const li = document.createElement("li");
+              li.innerHTML = `<a href="${linkBase}${file.name}" target="_blank">${file.name}</a>`;
+              fileList.appendChild(li);
             }
-        }
-
-        window.onload = fetchFiles;
-    </script>
+          });
+        })
+        .catch(err => {
+          loading.style.display = "none";
+          error.style.display = "block";
+          error.textContent = err.message;
+        });
+    }
+  </script>
 </body>
 </html>
