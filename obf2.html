@@ -3,38 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JavaScript SEC OBF</title>
+    <title>JS SEC OBF</title>
+	
+<body>
+    <!-- Injetor aqui em .js -->
+</body>
+	
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        textarea { width: 100%; height: 150px; }
-        button { margin-top: 10px; padding: 10px; }
-        pre { background: #f4f4f4; padding: 10px; overflow: auto; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #2e2e2e;
+            color: #d0d0d0;
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        textarea, pre {
+            width: 100%;
+            height: 150px;
+            background-color: #353535;
+            color: #e0e0e0;
+            border: 1px solid #505050;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            box-sizing: border-box;
+            resize: none;
+            overflow-y: auto;
+            overflow-x: hidden;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        button {
+            margin: 10px 5px;
+            padding: 10px 20px;
+            background-color: #b0b0b0;
+            color: #1a1a1a;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #c8c8c8;
+        }
+        button:disabled {
+            background-color: #707070;
+            cursor: not-allowed;
+        }
+        h3 {
+            color: #b0b0b0;
+            text-align: center;
+        }
+        .button-container {
+            margin: 10px 0;
+            text-align: center;
+        }
+        .copy-btn {
+            background-color: #909090;
+        }
+        .copy-btn:hover {
+            background-color: #a8a8a8;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #a6e3a1;
+            color: #1a1a1a;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        .notification.show {
+            opacity: 1;
+        }
+        .notification.error {
+            background-color: #f2b8b5;
+        }
     </style>
 </head>
 <body>
-    <textarea id="inputCode" placeholder="JS Aqui"></textarea>
-    <button onclick="obfuscateCode()">Obfuscar Código</button>
-    <h3>Código Ofuscado:</h3>
-    <pre id="outputCode"></pre>
+    <div class="container">
+        <textarea id="inputCode" placeholder="JS Aqui"></textarea>
+        <div class="button-container">
+            <button id="obfuscateBtn">Obfuscar Código</button>
+        </div>
+        <h3>Código Ofuscado:</h3>
+        <pre id="outputCode"></pre>
+        <div class="button-container">
+            <button class="copy-btn" onclick="copyCode()">Copiar</button>
+        </div>
+    </div>
     <script>
+        const obfuscateBtn = document.getElementById("obfuscateBtn");
+        const outputElement = document.getElementById("outputCode");
+
+        obfuscateBtn.addEventListener("click", obfuscateCode);
+
         function obfuscateCode() {
             let input = document.getElementById("inputCode").value;
             if (!input.trim()) {
-                alert("Digite um código JavaScript para ofuscar.");
+                showNotification("Digite um código JavaScript para ofuscar.", false);
                 return;
             }
-            
-            let obfuscatedCode = secureObfuscator(input);
-            document.getElementById("outputCode").textContent = obfuscatedCode;
+
+            obfuscateBtn.textContent = "Encriptando código...";
+            obfuscateBtn.disabled = true;
+
+            try {
+                let obfuscatedCode = secureObfuscator(input);
+                outputElement.textContent = obfuscatedCode;
+                showNotification("Código ofuscado com sucesso!", true);
+            } catch (error) {
+                showNotification("Erro ao ofuscar o código.", false);
+                console.error("Erro:", error);
+            } finally {
+                obfuscateBtn.textContent = "Obfuscar Código";
+                obfuscateBtn.disabled = false;
+            }
         }
-        
+
         function secureObfuscator(code) {
-            let encoded = btoa(unescape(encodeURIComponent(code)));
-            let shuffled = encoded.split('').reverse().join('');
-            let key = Math.floor(Math.random() * 1000) + 1;
-            let encrypted = shuffled.split('').map(c => String.fromCharCode(c.charCodeAt(0) ^ key)).join('');
-            let wrapped = `(() => { let d='${btoa(encrypted)}',k=${key},c=atob(d).split('').map(x=>String.fromCharCode(x.charCodeAt(0)^k)).join(''); eval(c); })();`;
-            return wrapped;
+            let encoded = btoa(code);
+            let key = Math.floor(Math.random() * 100) + 1;
+            let encrypted = '';
+            for (let i = 0; i < encoded.length; i++) {
+                encrypted += String.fromCharCode(encoded.charCodeAt(i) ^ key);
+            }
+            return `(() => { let d=atob('${btoa(encrypted)}'),k=${key},c='';for(let i=0;i<d.length;i++){c+=String.fromCharCode(d.charCodeAt(i)^k);}eval(atob(c)); })();`;
+        }
+
+        function copyCode() {
+            let code = outputElement.textContent;
+            if (!code.trim()) {
+                showNotification("Nenhum código para copiar.", false);
+                return;
+            }
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification("Código copiado com sucesso!", true);
+            }).catch(() => {
+                showNotification("Falha ao copiar o código.", false);
+            });
+        }
+
+        function showNotification(message, isSuccess) {
+            let notification = document.querySelector(".notification");
+            if (!notification) {
+                notification = document.createElement("div");
+                notification.className = "notification";
+                document.body.appendChild(notification);
+            }
+            notification.textContent = message;
+            notification.className = `notification ${isSuccess ? "" : "error"} show`;
+            setTimeout(() => {
+                notification.classList.remove("show");
+            }, 3000);
         }
     </script>
 </body>
