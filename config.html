@@ -51,15 +51,18 @@
     <script>
         async function fetchFiles() {
             const apiUrl = 'https://api.github.com/repos/tonnyxss/r/contents/';
-            const linkBaseUrl = 'https://tonnyxss.github.io/r/'; // Link ajustado
+            const linkBaseUrl = 'https://tonnyxss.github.io/r/';
             const fileList = document.getElementById('file-list');
             const loading = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
 
             try {
+                console.log('Fazendo requisição para:', apiUrl);
                 const response = await fetch(apiUrl);
+                console.log('Resposta:', response);
                 if (!response.ok) throw new Error('Erro ao buscar arquivos');
                 const files = await response.json();
+                console.log('Arquivos recebidos:', files);
 
                 loading.style.display = 'none';
 
@@ -80,6 +83,7 @@
                     }
                 });
             } catch (error) {
+                console.log('Erro:', error);
                 loading.style.display = 'none';
                 errorDiv.style.display = 'block';
                 errorDiv.textContent = `Erro: ${error.message}`;
