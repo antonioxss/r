@@ -19,9 +19,9 @@
 
         .content {
             text-align: center;
-            max-width: 600px; /* Largura máxima para telas grandes */
+            max-width: 600px;
             padding: 20px;
-            width: 100%; /* Permitir o conteúdo ocupar 100% da largura disponível */
+            width: 100%;
             box-sizing: border-box;
         }
 
@@ -50,10 +50,9 @@
             background-color: #666;
         }
 
-        /* Estilo para telas maiores (PCs) */
         @media (min-width: 768px) {
             .content {
-                max-width: 800px; /* Ajustando o tamanho máximo do conteúdo em telas maiores */
+                max-width: 800px;
             }
 
             h1 {
@@ -70,7 +69,6 @@
             }
         }
 
-        /* Estilo para telas menores (Smartphones) */
         @media (max-width: 767px) {
             .content {
                 padding: 15px;
@@ -100,7 +98,7 @@
 
     <script>
         let curiosidades = [];
-        let lastIndex = -1; // Armazenar o índice da última curiosidade exibida
+        let usedCuriosities = []; // Lista de curiosidades já exibidas
 
         // Função para carregar curiosidades do arquivo .txt
         fetch('curiosidades.txt')
@@ -114,15 +112,25 @@
         function newCuriosity() {
             if (curiosidades.length === 0) {
                 document.getElementById('suggestion').textContent = 'Erro ao carregar curiosidades.';
-            } else {
-                let randomIndex;
-                do {
-                    randomIndex = Math.floor(Math.random() * curiosidades.length);
-                } while (randomIndex === lastIndex); // Evitar repetir a mesma curiosidade
-
-                lastIndex = randomIndex; // Atualiza o índice da última curiosidade exibida
-                document.getElementById('suggestion').textContent = curiosidades[randomIndex];
+                return;
             }
+
+            // Se todas as curiosidades foram exibidas, reabastecer a lista
+            if (curiosidades.length === usedCuriosities.length) {
+                usedCuriosities = [];
+            }
+
+            // Escolher uma curiosidade que ainda não foi exibida
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * curiosidades.length);
+            } while (usedCuriosities.includes(randomIndex));
+
+            // Exibir a curiosidade escolhida
+            document.getElementById('suggestion').textContent = curiosidades[randomIndex];
+
+            // Adicionar o índice à lista de curiosidades usadas
+            usedCuriosities.push(randomIndex);
         }
     </script>
 </body>
