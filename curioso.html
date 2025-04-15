@@ -12,9 +12,21 @@
             margin: 0;
             padding: 0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid white;
         }
 
         .content {
@@ -91,23 +103,40 @@
     </style>
 </head>
 <body>
+    <div class="logo">
+        <img src="https://i.imgur.com/0iV7e2m.gif" alt="Logo">
+    </div>
     <div class="content">
         <p id="suggestion">Carregando curiosidade...</p>
         <button onclick="newCuriosity()">Mostrar outra</button>
     </div>
 
     <script>
-        let curiosidades = [];
-        let usedCuriosities = []; // Lista de curiosidades já exibidas
+        let curiosidades = []; // Lista original de curiosidades
+        let curiosidadesEmbaralhadas = []; // Lista embaralhada para exibição
+        let currentCuriosityIndex = 0;
 
         // Função para carregar curiosidades do arquivo .txt
         fetch('curiosidades.txt')
             .then(response => response.text())
             .then(text => {
-                curiosidades = text.split('\n');
-                newCuriosity(); // Exibir a primeira curiosidade ao carregar
+                curiosidades = text.split('\n').filter(line => line.trim() !== ''); // Remove linhas vazias
+                curiosidadesEmbaralhadas = [...curiosidades]; // Cria uma cópia
+                shuffleCuriosities(); // Embaralha a cópia
+                newCuriosity(); // Exibe a primeira curiosidade
             })
-            .catch(error => console.error('Erro ao carregar o arquivo de curiosidades:', error));
+            .catch(error => {
+                console.error('Erro ao carregar o arquivo de curiosidades:', error);
+                document.getElementById('suggestion').textContent = 'Erro ao carregar curiosidades.';
+            });
+
+        // Função para embaralhar a lista de curiosidades
+        function shuffleCuriosities() {
+            for (let i = curiosidadesEmbaralhadas.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [curiosidadesEmbaralhadas[i], curiosidadesEmbaralhadas[j]] = [curiosidadesEmbaralhadas[j], curiosidadesEmbaralhadas[i]];
+            }
+        }
 
         function newCuriosity() {
             if (curiosidades.length === 0) {
@@ -115,22 +144,18 @@
                 return;
             }
 
-            // Se todas as curiosidades foram exibidas, reabastecer a lista
-            if (curiosidades.length === usedCuriosities.length) {
-                usedCuriosities = [];
+            // Se todas as curiosidades foram exibidas, reembaralha
+            if (currentCuriosityIndex >= curiosidadesEmbaralhadas.length) {
+                currentCuriosityIndex = 0;
+                curiosidadesEmbaralhadas = [...curiosidades]; // Cria uma nova cópia
+                shuffleCuriosities(); // Embaralha a nova cópia
             }
 
-            // Escolher uma curiosidade que ainda não foi exibida
-            let randomIndex;
-            do {
-                randomIndex = Math.floor(Math.random() * curiosidades.length);
-            } while (usedCuriosities.includes(randomIndex));
+            // Exibe a curiosidade atual
+            document.getElementById('suggestion').textContent = curiosidadesEmbaralhadas[currentCuriosityIndex];
 
-            // Exibir a curiosidade escolhida
-            document.getElementById('suggestion').textContent = curiosidades[randomIndex];
-
-            // Adicionar o índice à lista de curiosidades usadas
-            usedCuriosities.push(randomIndex);
+            // Avança para a próxima curiosidade
+            currentCuriosityIndex++;
         }
     </script>
 </body>
