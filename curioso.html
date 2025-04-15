@@ -94,13 +94,13 @@
 </head>
 <body>
     <div class="content">
-        
         <p id="suggestion">Carregando curiosidade...</p>
         <button onclick="newCuriosity()">Mostrar outra</button>
     </div>
 
     <script>
         let curiosidades = [];
+        let lastIndex = -1; // Armazenar o índice da última curiosidade exibida
 
         // Função para carregar curiosidades do arquivo .txt
         fetch('curiosidades.txt')
@@ -115,7 +115,12 @@
             if (curiosidades.length === 0) {
                 document.getElementById('suggestion').textContent = 'Erro ao carregar curiosidades.';
             } else {
-                const randomIndex = Math.floor(Math.random() * curiosidades.length);
+                let randomIndex;
+                do {
+                    randomIndex = Math.floor(Math.random() * curiosidades.length);
+                } while (randomIndex === lastIndex); // Evitar repetir a mesma curiosidade
+
+                lastIndex = randomIndex; // Atualiza o índice da última curiosidade exibida
                 document.getElementById('suggestion').textContent = curiosidades[randomIndex];
             }
         }
