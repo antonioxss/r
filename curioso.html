@@ -18,17 +18,6 @@
             height: 100vh;
         }
 
-        .logo {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .logo img {
-            max-width: 100%;
-            height: auto;
-            border: 2px solid white;
-        }
-
         .content {
             text-align: center;
             max-width: 600px;
@@ -103,9 +92,7 @@
     </style>
 </head>
 <body>
-    <div class="logo">
-        <img src="https://i.imgur.com/0iV7e2m.gif" alt="Logo">
-    </div>
+
     <div class="content">
         <p id="suggestion">Carregando curiosidade...</p>
         <button onclick="newCuriosity()">Mostrar outra</button>
@@ -113,16 +100,48 @@
 
     <script>
         let curiosidades = []; // Lista original de curiosidades
-        let curiosidadesEmbaralhadas = []; // Lista embaralhada para exibição
-        let currentCuriosityIndex = 0;
+        let viewedCuriosities = []; // Índices das curiosidades já vistas
 
-        // Função para carregar curiosidades do arquivo .txt
+        // Carrega curiosidades vistas do localStorage
+        function loadViewedCuriosities() {
+            const stored = localStorage.getItem('viewedCuriosities');
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        // Salva curiosidades vistas no localStorage
+        function saveViewedCuriosities() {
+            localStorage.setItem('viewedCuriosities', JSON.stringify(viewedCuriosities));
+        }
+
+        // Embaralha array (Fisher-Yates)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Carrega curiosidades do arquivo .txt
         fetch('curiosidades.txt')
             .then(response => response.text())
             .then(text => {
                 curiosidades = text.split('\n').filter(line => line.trim() !== ''); // Remove linhas vazias
-                curiosidadesEmbaralhadas = [...curiosidades]; // Cria uma cópia
-                shuffleCuriosities(); // Embaralha a cópia
+                curiosidades = [...new Set(curiosidades)]; // Remove duplicatas
+                console.log(`Total de curiosidades únicas carregadas: ${curiosidades.length}`);
+                
+                // Carrega curiosidades vistas
+                viewedCuriosities = loadViewedCuriosities();
+                
+                // Remove índices inválidos (caso o arquivo mude)
+                viewedCuriosities = viewedCuriosities.filter(index => index < curiosidades.length);
+                
+                // Se todas foram vistas, reseta
+                if (viewedCuriosities.length >= curiosidades.length) {
+                    viewedCuriosities = [];
+                    saveViewedCuriosities();
+                }
+                
                 newCuriosity(); // Exibe a primeira curiosidade
             })
             .catch(error => {
@@ -130,32 +149,37 @@
                 document.getElementById('suggestion').textContent = 'Erro ao carregar curiosidades.';
             });
 
-        // Função para embaralhar a lista de curiosidades
-        function shuffleCuriosities() {
-            for (let i = curiosidadesEmbaralhadas.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [curiosidadesEmbaralhadas[i], curiosidadesEmbaralhadas[j]] = [curiosidadesEmbaralhadas[j], curiosidadesEmbaralhadas[i]];
-            }
-        }
-
         function newCuriosity() {
             if (curiosidades.length === 0) {
                 document.getElementById('suggestion').textContent = 'Erro ao carregar curiosidades.';
                 return;
             }
 
-            // Se todas as curiosidades foram exibidas, reembaralha
-            if (currentCuriosityIndex >= curiosidadesEmbaralhadas.length) {
-                currentCuriosityIndex = 0;
-                curiosidadesEmbaralhadas = [...curiosidades]; // Cria uma nova cópia
-                shuffleCuriosities(); // Embaralha a nova cópia
+            // Filtra curiosidades não vistas
+            let availableIndices = [];
+            for (let i = 0; i < curiosidades.length; i++) {
+                if (!viewedCuriosities.includes(i)) {
+                    availableIndices.push(i);
+                }
             }
 
-            // Exibe a curiosidade atual
-            document.getElementById('suggestion').textContent = curiosidadesEmbaralhadas[currentCuriosityIndex];
+            // Se não há mais curiosidades disponíveis, reseta o histórico
+            if (availableIndices.length === 0) {
+                viewedCuriosities = [];
+                saveViewedCuriosities();
+                availableIndices = Array.from({length: curiosidades.length}, (_, i) => i);
+            }
 
-            // Avança para a próxima curiosidade
-            currentCuriosityIndex++;
+            // Embaralha índices disponíveis e escolhe o primeiro
+            availableIndices = shuffleArray(availableIndices);
+            const selectedIndex = availableIndices[0];
+
+            // Exibe a curiosidade
+            document.getElementById('suggestion').textContent = curiosidades[selectedIndex];
+
+            // Adiciona ao histórico
+            viewedCuriosities.push(selectedIndex);
+            saveViewedCuriosities();
         }
     </script>
 </body>
