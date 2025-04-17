@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dólar Agora</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            text-align: center;
+        }
+        #cotacao {
+            font-size: 2.2em;
+            color: #ff822e;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .detalhes {
+            font-size: 0.9em;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .detalhes span {
+            color: #ff822e;
+            font-weight: bold;
+        }
+        #ultima-atualizacao {
+            font-size: 0.8em;
+            color: #b0b0b0;
+            margin-top: 10px;
+        }
+        #loading {
+            font-size: 0.9em;
+            color: #888;
+            margin-top: 10px;
+        }
+        #erro {
+            color: #ff822e;
+            font-size: 0.8em;
+            margin-top: 10px;
+        }
+
+        /* Responsividade para smartphones */
+        @media (max-width: 600px) {
+            #cotacao {
+                font-size: 1.8em;
+            }
+            .detalhes {
+                font-size: 0.85em;
+            }
+            #ultima-atualizacao, #loading, #erro {
+                font-size: 0.75em;
+            }
+            .botao-atualizar {
+                padding: 10px;
+                font-size: 0.85em;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="cotacao">Carregando...</div>
+    <div class="detalhes">
+        <p>Variação: <span id="variacao">...</span></p>
+        <p>Máximo do dia: <span id="maximo">...</span> BRL</p>
+        <p>Mínimo do dia: <span id="minimo">...</span> BRL</p>
+    </div>
+    <div id="ultima-atualizacao"></div>
+    <div id="loading"></div>
+    <div id="erro"></div>
+
+    <script>
+        const apiUrl = 'https://economia.awesomeapi.com.br/json/last/USD-BRL';
+
+        async function obterCotacao() {
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                
+                if (data && data.USDBRL) {
+                    const cotacaoBRL = parseFloat(data.USDBRL.bid);
+                    const variacao = parseFloat(data.USDBRL.pctChange);
+                    const maximo = parseFloat(data.USDBRL.high);
+                    const minimo = parseFloat(data.USDBRL.low);
+                    const timestamp = parseInt(data.USDBRL.timestamp) * 1000; // Converte para ms
+
+                    document.getElementById('cotacao').textContent = `1 USD = ${cotacaoBRL.toFixed(2)} BRL`;
+                    document.getElementById('variacao').textContent = `${variacao.toFixed(2)}%`;
+                    document.getElementById('maximo').textContent = maximo.toFixed(2);
+                    document.getElementById('minimo').textContent = minimo.toFixed(2);
+                    document.getElementById('ultima-atualizacao').textContent = `Última atualização: ${new Date(timestamp).toLocaleString('pt-BR')}`;
+                    document.getElementById('loading').textContent = '';
+                    document.getElementById('erro').textContent = '';
+                } else {
+                    document.getElementById('cotacao').textContent = 'Erro ao carregar cotação';
+                    document.getElementById('erro').textContent = 'Dados indisponíveis';
+                }
+            } catch (error) {
+                document.getElementById('cotacao').textContent = 'Erro ao conectar a API';
+                document.getElementById('erro').textContent = 'Verifique sua conexão com a internet';
+                console.error('Erro:', error);
+            }
+        }
+
+        // Função para atualização automática a cada 60 segundos
+        function atualizarCotacao() {
+            document.getElementById('loading').textContent = 'Atualizando...';
+            obterCotacao();
+            setInterval(() => {
+                document.getElementById('loading').textContent = 'Atualizando...';
+                obterCotacao();
+            }, 60000); // 60 segundos
+        }
+
+        // Chama a função ao carregar a página
+        window.onload = atualizarCotacao;
+    </script>
+</body>
+</html>
